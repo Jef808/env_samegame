@@ -6,13 +6,15 @@
 
 constexpr int NB_COLORS = 5;
 
-enum class Color { Empty = -1, Nb = NB_COLORS };
+enum class Color { Empty = 0, Nb = NB_COLORS+1 };
 
 struct Cluster {
 
-  explicit Cluster(int r) : rep{r}, members{} {}
+  explicit Cluster(int r) : rep{r}, members(1, r)
+  {
+  }
 
-  int rep;
+  mutable int rep;
   Color color{Color::Empty};
   std::vector<int> members;
 
@@ -41,7 +43,7 @@ public:
    * @Param i  The index of the query cell.
    * @Return  The index of the cluster's representative.
    */
-  int find_rep(int i);
+  int find_rep(int i) const;
 
   /**
    * Merge the two clusters to which the two given cells belong.

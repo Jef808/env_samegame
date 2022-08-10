@@ -36,12 +36,17 @@ public:
   /**
    * Get the cluster containing the cell at index i.
    */
-  const Cluster &get_cluster(int i) const { return m_data[i]; }
+  const Cluster &get_cluster(int i) const;
 
   /**
    * Check if an action is valid in the current state.
    */
   bool is_valid(const Action &action) const;
+
+  /**
+   * Check if the state is valid.
+   */
+  bool is_valid_state() const;
 
   size_t width() const { return m_width; }
   size_t height() const { return m_height; }

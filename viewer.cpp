@@ -51,7 +51,7 @@ template <typename E> auto to_integral(E e) {
   return static_cast<std::underlying_type_t<E>>(e);
 }
 
-enum class ColorCode : int {
+enum class ColorCode {
   Black = 30,
   Red = 31,
   Green = 32,
@@ -77,70 +77,50 @@ enum {
   Highlighted = 8,
 };
 
-enum class Shape : int {
+enum class Shape {
   EmptyCell = 0,
-  NonEmptyCell = 1,                  // (1)
-  NonTrivialCell = 3,                // (1 + 2)
-  EmptyRepCell = 4,                  // (0 + 4)
-  TrivialRepCell = 5,                // (1 + 4)
-  NonTrivialRepCell = 7,             // (1 + 2 + 4)
-  EmptyHighlightedCell = 8,          // (8)
-  NonEmptyHighlightedCell = 9,       // (1 + 8)
-  NonTrivialHighlightedCell = 11,    // (1 + 2 + 8)
-  TrivialHighlightedRepCell = 13,    // (1 + 4 + 8)
-  NonTrivialHighlightedRepCell = 15  // (1 + 2 + 4 + 8)
+  TrivialCell = 1,
+  NonTrivialCell = 2,
+  RepCell = 3,
 };
 
-inline std::string shape_unicode(Shape s);
-inline std::ostream &with_color_unicode(const std::string &s, Color c,
-                                        std::ostream &os);
+inline ColorCode color_code(Color c) { return ColorCode(to_integral(c) + 90); }
+
+inline std::ostream &with_color(const Color c, const std::string &s,
+                                std::ostream &os) {
+  return os << "\033[1;" << to_integral(color_code(c)) << "m" << s << "\033[0m";
+}
 
 inline std::string shape_unicode(Shape s) {
   switch (s) {
   case Shape::EmptyCell:
-  case Shape::EmptyRepCell:
-    return "\u25A0"; // black square
-  case Shape::NonEmptyCell:
-  case Shape::TrivialRepCell:
+  case Shape::TrivialCell:
     return "\u25A0"; // black square (will be colored)
   case Shape::NonTrivialCell:
     return "\u25A3"; // white square with black square inside
-  case Shape::NonTrivialRepCell:
+  case Shape::RepCell:
     return "\u25C9"; // white circle with black circle inside
-  case Shape::EmptyHighlightedCell:
-    return "\u25C6"; // black diamond
-  case Shape::NonEmptyHighlightedCell:
-  case Shape::TrivialHighlightedRepCell:
-    return "\u25C6"; // black diamond (will be colored)
-  case Shape::NonTrivialHighlightedCell:
-    return "\u25C9"; // white diamond with black circle inside
-  case Shape::NonTrivialHighlightedRepCell:
-    return "\u25CE"; // bullseye
   default:
     std::cerr << "Shape: " << to_integral(s) << std::endl;
     throw std::runtime_error("Unknown shape");
   }
 }
 
-inline ColorCode color_code(Color c) { return ColorCode(to_integral(c) + 91); }
-
-inline std::ostream &with_color_unicode(const std::string &s, Color c,
-                                        std::ostream &os) {
-  return os << "\033[1;" << to_integral(color_code(c)) << 'm' << s << "\033[0m";
-}
-
 inline Shape get_shape(const int idx, const Cluster &cluster,
                        const Cluster &cluster_hl) {
 
-  const bool is_non_empty = cluster.color != Color::Empty;
+  const bool is_empty = cluster.color == Color::Empty;
+  const bool is_trivial = cluster.members.size() < 2;
   const bool is_nontrivial = cluster.members.size() > 1;
-  const bool is_rep = idx == cluster.rep;
-  const bool is_hl = std::count(cluster_hl.begin(), cluster_hl.end(), idx);
+  const bool is_rep = is_nontrivial && idx == cluster.rep;
+  // const bool is_hl = std::count(cluster_hl.begin(), cluster_hl.end(), idx);
 
-  return Shape((int)is_non_empty
-               | (is_nontrivial << 1) // 0 OR 1 mod 2
-               | (is_rep << 2)       // <=2 OR >=2 mod 4
-               | (is_hl << 3));      // <=4 OR >=4 mod 8
+  Shape shape = is_rep          ? Shape::RepCell
+                : is_nontrivial ? Shape::NonTrivialCell
+                : is_empty      ? Shape::EmptyCell
+                                : Shape::TrivialCell;
+
+  return shape;
 }
 
 std::ostream &fmt_cell(std::ostream &out, int idx, const SameGame &sg,
@@ -149,17 +129,14 @@ std::ostream &fmt_cell(std::ostream &out, int idx, const SameGame &sg,
   static Cluster cluster_hl = Cluster{-1};
 
   if (const bool cluster_hl_dirty = highlight_cluster != last_hl_idx;
-      cluster_hl_dirty)
-  {
+      cluster_hl_dirty) {
     cluster_hl = sg.get_cluster(last_hl_idx = highlight_cluster);
   }
 
   const Cluster &cluster = sg.get_cluster(idx);
 
-  return with_color_unicode(
-    shape_unicode(get_shape(idx, cluster, cluster_hl)),
-    cluster.color,
-    out);
+  return with_color(cluster.color,
+                    shape_unicode(get_shape(idx, cluster, cluster_hl)), out);
 }
 
 } // namespace
