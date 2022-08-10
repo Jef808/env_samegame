@@ -7,99 +7,94 @@
 #include <iosfwd>
 #include <vector>
 
-
 struct Action {
-    int index;
+  int index;
 };
-
 
 class SameGame {
 public:
-    SameGame(size_t width, size_t height);
+  SameGame(size_t width, size_t height);
 
-    ~SameGame();
+  ~SameGame();
 
-    /**
-     * Load the board from an input stream.
-     */
-    void load(std::istream& is);
+  /**
+   * Load the board from an input stream.
+   */
+  void load(std::istream &is);
 
-    /**
-     * Get the cluster containing the cell at index i.
-     */
-    const Cluster& get_cluster(int i) const { return m_data[i]; }
+  /**
+   * Apply a move by emptying the associated cluster of cells
+   * and applying downwards and leftwards gravity.
+   */
+  void apply(const Action &action);
 
-    /**
-     * Apply a move by emptying the associated cluster of cells
-     * and applying downwards and leftwards gravity.
-     */
-    void apply(const Action& action);
+  /**
+   * Get valid actions.
+   */
+  template <typename OutputIter> void valid_actions(OutputIter out) const;
 
-    /**
-     * Get valid actions.
-     */
-    template<typename OutputIter>
-    void valid_actions(OutputIter out) const;
+  /**
+   * Get the cluster containing the cell at index i.
+   */
+  const Cluster &get_cluster(int i) const { return m_data[i]; }
 
-    /**
-     * Check if an action is valid in the current state.
-     */
-    bool is_valid(const Action& action) const;
+  /**
+   * Check if an action is valid in the current state.
+   */
+  bool is_valid(const Action &action) const;
 
-        size_t width() const { return m_width; }
-        size_t height() const { return m_height; }
+  size_t width() const { return m_width; }
+  size_t height() const { return m_height; }
 
 private:
-    const size_t m_width;
-    const size_t m_height;
-    DSU m_data;
+  const size_t m_width;
+  const size_t m_height;
+  DSU m_data;
 
-    std::array<int, NB_COLORS> ccount;
-    int n_empty_rows;
+  std::array<int, NB_COLORS + 1> ccount;
+  int n_empty_rows;
 
-    /**
-     * Organize the connected sets of cells of the same color
-     * into the #Cluster array of the member #DSU `m_data`.
-     */
-    void compute_clusters();
+  /**
+   * Organize the connected sets of cells of the same color
+   * into the #Cluster array of the member #DSU `m_data`.
+   */
+  void compute_clusters();
 
-    /**
-     * Let downwards gravity act on the board,
-     * filling gaps horizontally created by empty cells.
-     */
-    void gravity();
+  /**
+   * Let downwards gravity act on the board,
+   * filling gaps horizontally created by empty cells.
+   */
+  void gravity();
 
-    /**
-     * Stack columns towards the left,
-     * filling gaps created by empty columns.
-     *
-     * Note:  Requires the board to have no
-     * horizontal gap between its cells, e.g. after
-     * a call to #gravity().
-     */
-    void stack_columns();
+  /**
+   * Stack columns towards the left,
+   * filling gaps created by empty columns.
+   *
+   * Note:  Requires the board to have no
+   * horizontal gap between its cells, e.g. after
+   * a call to #gravity().
+   */
+  void stack_columns();
 
-    /**
-     * Empty all cells of a cluster.
-     */
-    void empty_cluster(int index);
+  /**
+   * Empty all cells of a cluster.
+   */
+  void empty_cluster(int index);
 };
 
-
-inline bool SameGame::is_valid(const Action& action) const {
-    const Cluster& cluster = m_data[action.index];
-    return cluster.color != Color::Empty
-        && cluster.members.size() > 1;  // NOTE: Only reps have nonzero sized members
+inline bool SameGame::is_valid(const Action &action) const {
+  const Cluster &cluster = m_data[action.index];
+  return cluster.color != Color::Empty &&
+         cluster.members.size() >
+             1; // NOTE: Only reps have nonzero sized members
 }
 
-template<typename OutputIter>
+template <typename OutputIter>
 inline void SameGame::valid_actions(OutputIter out) const {
-    for (auto it = m_data.begin(); it != m_data.end(); ++it)
-        if (const Action action { it->rep };
-            is_valid(action))
-        {
-            out = action;
-        }
+  for (auto it = m_data.begin(); it != m_data.end(); ++it)
+    if (const Action action{it->rep}; is_valid(action)) {
+      out = action;
+    }
 }
 
 #endif // SAMEGAME_H_

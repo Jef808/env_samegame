@@ -6,14 +6,14 @@
 
 constexpr int NB_COLORS = 5;
 
-enum class Color { Unknown = -1, Empty = 0, Nb = NB_COLORS + 1 };
+enum class Color { Empty = -1, Nb = NB_COLORS };
 
 struct Cluster {
 
   explicit Cluster(int r) : rep{r}, members{} {}
 
   int rep;
-  Color color{Color::Unknown};
+  Color color{Color::Empty};
   std::vector<int> members;
 
   size_t size() { return members.size(); }

@@ -19,8 +19,10 @@ void DSU::reset() {
 }
 
 int DSU::find_rep(int i) {
-  if (bool rep_found = m_clusters[i].rep == i; not rep_found) {
-    return m_clusters[i].rep = find_rep(i);
+  if (int& rep = m_clusters[i].rep;
+      rep != i)
+  {
+    return rep = find_rep(rep);
   }
   return i;
 }
