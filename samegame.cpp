@@ -4,10 +4,7 @@
 #include <cassert>
 #include <deque>
 #include <iostream>
-#include <set>
 #include <string>
-#include <sstream>
-#include <type_traits>
 #include <vector>
 
 namespace {
@@ -69,8 +66,6 @@ void SameGame::load(std::istream &is) {
   compute_clusters();
 }
 
-// TODO: It seems I can decrease y by 2 in the
-// outermost for loop below.
 void SameGame::compute_clusters() {
   m_data.reset();
 
