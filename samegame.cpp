@@ -199,7 +199,7 @@ const Cluster &SameGame::get_cluster(int i) const {
   return m_data[m_data.find_rep(i)];
 }
 
-void SameGame::empty_cluster(int index) {
+void SameGame::clear_cluster(int index) {
   members_buffer.clear();
 
   const std::vector<int> &_members = get_cluster(index).members;
@@ -253,7 +253,7 @@ void SameGame::apply(const Action &action) {
     throw std::runtime_error("Invalid action");
   }
 
-  empty_cluster(action.index);
+  clear_cluster(action.index);
   gravity();
   stack_columns();
   compute_clusters();

@@ -34,6 +34,12 @@ public:
   template <typename OutputIter> void valid_actions(OutputIter out) const;
 
   /**
+   * Get the current count for each colors.
+   */
+  template<typename OutputIter>
+  void color_counter(OutputIter out) const;
+
+  /**
    * Get the cluster containing the cell at index i.
    */
   const Cluster &get_cluster(int i) const;
@@ -87,7 +93,7 @@ private:
   /**
    * Empty all cells of a cluster.
    */
-  void empty_cluster(int index);
+  void clear_cluster(int index);
 };
 
 template <typename OutputIter>
@@ -98,5 +104,12 @@ inline void SameGame::valid_actions(OutputIter out) const {
     }
   }
 }
+
+template< typename OutputIter >
+inline void SameGame::color_counter(OutputIter out) const {
+  std::copy(ccount.begin(), ccount.end(), out);
+}
+
+
 
 #endif // SAMEGAME_H_
