@@ -15,12 +15,8 @@ std::vector<int> members_buffer;
 } // namespace
 
 SameGame::SameGame(size_t width, size_t height)
-    : m_width{width},
-      m_height{height},
-      m_data{width * height},
-      ccount{},
-      n_empty_rows{0}
-{
+    : m_width{width}, m_height{height}, m_data{width * height}, ccount{},
+      n_empty_rows{0} {
   gravity_buffer.resize(width * height, Color::Empty);
   members_buffer.reserve(width * height);
   ccount.fill(0);
@@ -32,7 +28,6 @@ SameGame::~SameGame() {
   members_buffer.clear();
   members_buffer.shrink_to_fit();
 }
-
 
 void SameGame::load(std::istream &is) {
   m_data.reset();
@@ -47,18 +42,19 @@ void SameGame::load(std::istream &is) {
     bool row_empty = true;
     auto x = 0;
     for (; x < m_width; ++x) {
-        size_t pspace = std::min(sv.find(' '), sv.size());
-        buf_ss = std::string(pspace, '\0');
-        sv.copy(&buf_ss[0], pspace, 0);
-        sv.remove_prefix(pspace + 1);
+      size_t pspace = std::min(sv.find(' '), sv.size());
+      buf_ss = std::string(pspace, '\0');
+      sv.copy(&buf_ss[0], pspace, 0);
+      sv.remove_prefix(pspace + 1);
 
-        int color_i = std::stoi(buf_ss) + 1;
-        ++ccount[color_i];
+      int color_i = std::stoi(buf_ss) + 1;
+      ++ccount[color_i];
 
-        Cluster& cluster = m_data[x + y * m_width];
-        const Color color = cluster.color = Color(color_i);
-        const int rep = cluster.rep = cluster.color == Color::Empty? -1 : x + y * m_width;
-        row_empty &= rep == -1;
+      Cluster &cluster = m_data[x + y * m_width];
+      const Color color = cluster.color = Color(color_i);
+      const int rep = cluster.rep =
+          cluster.color == Color::Empty ? -1 : x + y * m_width;
+      row_empty &= rep == -1;
     }
 
     n_empty_rows += row_empty;
@@ -99,10 +95,9 @@ void SameGame::compute_clusters() {
 
     // At rightmost column,
     // if cell is empty,
-    if (m_data[i].color == Color::Empty)
-    {
-        // if the row is empty, update n_empty_rows
-        n_empty_rows = row_empty * std::max(n_empty_rows, y);
+    if (m_data[i].color == Color::Empty) {
+      // if the row is empty, update n_empty_rows
+      n_empty_rows = row_empty * std::max(n_empty_rows, y);
     }
 
     // Otherwise compare up.
@@ -119,7 +114,7 @@ void SameGame::compute_clusters() {
 
     // Skip empty cells
     if (m_data[i].color == Color::Empty) {
-        continue;
+      continue;
     }
 
     // Indicate that the row is non-empty if it is the case.
@@ -134,9 +129,7 @@ void SameGame::compute_clusters() {
   // 0 or 1.
   row_empty &= m_data[i].color == Color::Empty;
   n_empty_rows = row_empty * std::max(n_empty_rows, 1);
-
 }
-
 
 void SameGame::gravity() {
   // Reset the buffer
@@ -145,14 +138,12 @@ void SameGame::gravity() {
   // Loop through all columns
   for (int x = 0; x < m_width; ++x) {
     // Set up a fresh column for the output buffer
-    auto out = gravity_buffer.begin() + x*m_height;
+    auto out = gravity_buffer.begin() + x * m_height;
 
     // From the bottommost to the upmost cell in the column,
     for (int y = m_height - 1; y >= 0; --y) {
       // Copy the non-empty cells into the buffer
-      if (Color color = m_data[x + y*m_width].color;
-          color != Color::Empty)
-      {
+      if (Color color = m_data[x + y * m_width].color; color != Color::Empty) {
         *out++ = color;
       }
     }
@@ -162,14 +153,16 @@ void SameGame::gravity() {
     size_t n = m_height;
 
     for (size_t h = 0; h < m_height; ++h) {
-        m_data[x + (m_height-h-1)*m_width].color = gravity_buffer[x*m_height + h];
+      m_data[x + (m_height - h - 1) * m_width].color =
+          gravity_buffer[x * m_height + h];
     }
   }
 }
 
 // NOTE: We take advantage of the fact that #stack_columns() needs to be called
-// after #gravity(). Since no horizontal gap can exist in this context, it suffices
-// the check the bottom cell of a column to verify if the whole column is empty.
+// after #gravity(). Since no horizontal gap can exist in this context, it
+// suffices the check the bottom cell of a column to verify if the whole column
+// is empty.
 void SameGame::stack_columns() {
   // Empty column predicate
   auto is_empty_column = [&](auto x) {
@@ -181,45 +174,46 @@ void SameGame::stack_columns() {
   // Loop from the leftmost to the rightmost column
   for (size_t col = 0; col < m_width; ++col) {
 
-      // Store the index of empty columns as we find them
-      if (is_empty_column(col)) {
-          empty_cols.push_back(col);
-          continue;
-      }
+    // Store the index of empty columns as we find them
+    if (is_empty_column(col)) {
+      empty_cols.push_back(col);
+      continue;
+    }
 
-      // In case we have empty columns available on our left,
-      // swap the current (nonempty) column with the leftmost
-      // empty column
-      if (not empty_cols.empty()) {
-          for (int y = 0; y < m_height; ++y) {
-              std::swap(m_data[empty_cols.front() + y*m_width].color,
-                        m_data[col + y*m_width].color);
-          }
-          // Remove the newly filled column from the empty column queue.
-          empty_cols.pop_front();
-
-          // The current column is now the rightmost empty column known.
-          empty_cols.push_back(col);
+    // In case we have empty columns available on our left,
+    // swap the current (nonempty) column with the leftmost
+    // empty column
+    if (not empty_cols.empty()) {
+      for (int y = 0; y < m_height; ++y) {
+        std::swap(m_data[empty_cols.front() + y * m_width].color,
+                  m_data[col + y * m_width].color);
       }
+      // Remove the newly filled column from the empty column queue.
+      empty_cols.pop_front();
+
+      // The current column is now the rightmost empty column known.
+      empty_cols.push_back(col);
+    }
   }
 }
 
-const Cluster& SameGame::get_cluster(int i) const {
-     return m_data[m_data.find_rep(i)];
+const Cluster &SameGame::get_cluster(int i) const {
+  return m_data[m_data.find_rep(i)];
 }
 
 void SameGame::empty_cluster(int index) {
   members_buffer.clear();
 
-  const std::vector<int>& _members = get_cluster(index).members;
+  const std::vector<int> &_members = get_cluster(index).members;
   std::copy(_members.begin(), _members.end(),
             std::back_inserter(members_buffer));
 
-  std::for_each(members_buffer.begin(), members_buffer.end(), [&](const auto i) {
-    m_data[i].color = Color::Empty;
-    m_data[i].rep = i;
-    m_data[i].members.clear();
-  });
+  std::for_each(members_buffer.begin(), members_buffer.end(),
+                [&](const auto i) {
+                  m_data[i].color = Color::Empty;
+                  m_data[i].rep = i;
+                  m_data[i].members.clear();
+                });
 }
 
 void SameGame::apply(const Action &action) {

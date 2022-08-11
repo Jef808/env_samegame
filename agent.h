@@ -8,13 +8,13 @@
 
 class AgentRandom {
 public:
-    AgentRandom() = default;
+  AgentRandom() = default;
 
-    std::pair< bool, Action > choose(const SameGame& sg);
+  std::pair<bool, Action> choose(const SameGame &sg);
 
 private:
-    std::vector< Action > m_buffer;
-    std::mt19937 gen{ std::random_device{}() };
+  std::vector<Action> m_buffer;
+  std::mt19937 gen{std::random_device{}()};
 };
 
 #endif // AGENT_H_

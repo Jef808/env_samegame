@@ -6,7 +6,7 @@
 DSU::DSU(size_t size) : m_clusters{} {
   for (auto i = 0; i < size; ++i) {
     Cluster &cluster = m_clusters.emplace_back(i);
-    cluster.members = std::vector< int >(1, i);
+    cluster.members = std::vector<int>(1, i);
     cluster.members.reserve(size);
   }
 }
@@ -21,9 +21,7 @@ void DSU::reset() {
 }
 
 int DSU::find_rep(int i) const {
-  if (int& rep = m_clusters[i].rep;
-      rep != i)
-  {
+  if (int &rep = m_clusters[i].rep; rep != i) {
     return rep = find_rep(rep);
   }
   return i;

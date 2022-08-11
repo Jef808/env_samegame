@@ -84,20 +84,17 @@ private:
 
 inline bool SameGame::is_valid(const Action &action) const {
   const Cluster &cluster = m_data[action.index];
-  return cluster.color != Color::Empty
-            && cluster.rep == action.index
-            && cluster.size() > 1;
+  return cluster.color != Color::Empty && cluster.rep == action.index &&
+         cluster.size() > 1;
 }
 
 template <typename OutputIter>
 inline void SameGame::valid_actions(OutputIter out) const {
-    for (int i = 0; i < m_data.size(); ++i) {
-        if (auto action = Action{ i };
-            is_valid(action))
-        {
-            out = action;
-        }
+  for (int i = 0; i < m_data.size(); ++i) {
+    if (auto action = Action{i}; is_valid(action)) {
+      out = action;
     }
+  }
 }
 
 #endif // SAMEGAME_H_

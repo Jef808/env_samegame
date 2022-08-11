@@ -6,13 +6,11 @@
 
 constexpr int NB_COLORS = 5;
 
-enum class Color { Empty = 0, Nb = NB_COLORS+1 };
+enum class Color { Empty = 0, Nb = NB_COLORS + 1 };
 
 struct Cluster {
 
-  explicit Cluster(int r) : rep{r}, members(1, r)
-  {
-  }
+  explicit Cluster(int r) : rep{r}, members(1, r) {}
 
   mutable int rep;
   Color color{Color::Empty};

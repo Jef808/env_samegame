@@ -29,7 +29,7 @@ void Viewer::print(std::ostream &out, const SameGame &sg) {
     }
 
     // Build cell representative for the last cell.
-    fmt_cell(out, (y+1) * width - 1, sg) << '\n';
+    fmt_cell(out, (y + 1) * width - 1, sg) << '\n';
   }
 
   // Print the column indices
