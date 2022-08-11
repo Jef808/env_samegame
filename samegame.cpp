@@ -12,8 +12,8 @@
 
 namespace {
 
-std::vector<Color> col_buffer;
-std::vector<Color> row_buffer;
+std::vector<Color> gravity_buffer;
+std::vector<int> members_buffer;
 
 } // namespace
 
@@ -24,18 +24,17 @@ SameGame::SameGame(size_t width, size_t height)
       ccount{},
       n_empty_rows{0}
 {
-  col_buffer = std::vector<Color>(height, Color::Empty);
-  row_buffer = std::vector<Color>(width, Color::Empty);
+  gravity_buffer.resize(width * height, Color::Empty);
+  members_buffer.reserve(width * height);
   ccount.fill(0);
 }
 
 SameGame::~SameGame() {
-  col_buffer.clear();
-  col_buffer.shrink_to_fit();
-  row_buffer.clear();
-  row_buffer.shrink_to_fit();
+  gravity_buffer.clear();
+  gravity_buffer.shrink_to_fit();
+  members_buffer.clear();
+  members_buffer.shrink_to_fit();
 }
-
 
 
 void SameGame::load(std::istream &is) {
@@ -143,11 +142,15 @@ void SameGame::compute_clusters() {
 
 }
 
+
 void SameGame::gravity() {
+  // Reset the buffer
+  std::fill(gravity_buffer.begin(), gravity_buffer.end(), Color::Empty);
+
   // Loop through all columns
   for (int x = 0; x < m_width; ++x) {
-    // Clear out the color buffer
-    col_buffer.clear();
+    // Set up a fresh column for the output buffer
+    auto out = gravity_buffer.begin() + x*m_height;
 
     // From the bottommost to the upmost cell in the column,
     for (int y = m_height - 1; y >= 0; --y) {
@@ -155,18 +158,16 @@ void SameGame::gravity() {
       if (Color color = m_data[x + y*m_width].color;
           color != Color::Empty)
       {
-        col_buffer.push_back(color);
+        *out++ = color;
       }
     }
 
     // Copy the collected nonempty colors back into the column
     int h = 0;
-    for (; h < col_buffer.size(); ++h) {
-        m_data[x + (m_height-h-1)*m_width].color = col_buffer[h];
-    }
-    // Mark all cells above as empty.
-    for (; h < m_height; ++h) {
-        m_data[x + (m_height-h-1)*m_width].color = Color::Empty;
+    size_t n = m_height;
+
+    for (size_t h = 0; h < m_height; ++h) {
+        m_data[x + (m_height-h-1)*m_width].color = gravity_buffer[x*m_height + h];
     }
   }
 }
@@ -213,14 +214,13 @@ const Cluster& SameGame::get_cluster(int i) const {
 }
 
 void SameGame::empty_cluster(int index) {
-  static std::vector<int> members;
-  members.clear();
+  members_buffer.clear();
 
   const std::vector<int>& _members = get_cluster(index).members;
   std::copy(_members.begin(), _members.end(),
-            std::back_inserter(members));
+            std::back_inserter(members_buffer));
 
-  std::for_each(members.begin(), members.end(), [&](const auto i) {
+  std::for_each(members_buffer.begin(), members_buffer.end(), [&](const auto i) {
     m_data[i].color = Color::Empty;
     m_data[i].rep = i;
     m_data[i].members.clear();
