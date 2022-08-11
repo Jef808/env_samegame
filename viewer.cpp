@@ -20,10 +20,7 @@ void Viewer::print(std::ostream &out, const SameGame &sg) {
   for (size_t y = 0; y < height; ++y) {
     // First build the row labels on the
     // left of the row
-    const int label_y = height - 1 - y;
-
-    // More space after single digits
-    out << label_y << ((label_y < 10) ? "  " : " ") << "| ";
+    out << y << ((y < 10) ? "  " : " ") << "| ";
 
     // Build cell representatives until the
     // second to cell of the row.

@@ -150,91 +150,62 @@ void SameGame::gravity() {
     col_buffer.clear();
 
     // From the bottommost to the upmost cell in the column,
-    for (int h = 0; h < m_height; ++h) {
+    for (int y = m_height - 1; y >= 0; --y) {
       // Copy the non-empty cells into the buffer
-      if (const Color color = m_data[x + (m_height - 1 - h) * m_width].color;
-          color != Color::Empty) {
+      if (Color color = m_data[x + y*m_width].color;
+          color != Color::Empty)
+      {
         col_buffer.push_back(color);
       }
     }
 
-    int y = 0;
-
-    // Copy back the non-empty colors at the bottom of the column.
-    for (; y < col_buffer.size(); ++y) {
-      m_data[x + (m_height - 1 - y) * m_width].color = col_buffer[y];
+    // Copy the collected nonempty colors back into the column
+    int h = 0;
+    for (; h < col_buffer.size(); ++h) {
+        m_data[x + (m_height-h-1)*m_width].color = col_buffer[h];
     }
-
     // Mark all cells above as empty.
-    for (; y < m_height; ++y) {
-      m_data[x + (m_height - 1 - y) * m_width].color = Color::Empty;
+    for (; h < m_height; ++h) {
+        m_data[x + (m_height-h-1)*m_width].color = Color::Empty;
     }
   }
 }
 
-// NOTE: In `stack_columns`, we suppose that there are no
-// horizontal gap between cells as for states following
-// a call to `gravity()`.
-// Therefore in this context, checking that the bottom cell of
-// a column is empty is sufficient to verify that the whole
-// column is empty.
+// NOTE: We take advantage of the fact that #stack_columns() needs to be called
+// after #gravity(). Since no horizontal gap can exist in this context, it suffices
+// the check the bottom cell of a column to verify if the whole column is empty.
 void SameGame::stack_columns() {
-
   // Empty column predicate
   auto is_empty_column = [&](auto x) {
-    return m_data[x + (m_height - 1) * m_width].color != Color::Empty;
+    return m_data[x + (m_height - 1) * m_width].color == Color::Empty;
   };
 
-  std::deque<int> empty_cols;
-  std::set<int> known_empty_cols;
-  int x_left = 0, x_right = 0;
+  std::deque<size_t> empty_cols;
 
-  // Find the leftmost empty column.
-  while (x_left < m_width - 1 && not is_empty_column(x_left)) {
-    ++x_left;
-  }
+  // Loop from the leftmost to the rightmost column
+  for (size_t col = 0; col < m_width; ++col) {
 
-  // While the leftmost empty column is not the last
-  // one to the right, look for the next non-empty
-  // column.
-  while (x_left < m_width) {
-    // Search for next non-empty column, while storing
-    // any empty columns' indices.
-    int x_right = [x = x_left + 1, M = m_width, &is_empty_column,
-                   &empty_cols, &known_empty_cols]() mutable {
-      while (x < M && is_empty_column(x)) {
-        auto [col, okay] = known_empty_cols.insert(x++);
-        if (okay) {
-          empty_cols.push_back(*col);
-        }
+      // Store the index of empty columns as we find them
+      if (is_empty_column(col)) {
+          empty_cols.push_back(col);
+          continue;
       }
-      return x;
-    }();
 
-    // If failed to find nonempty column, we are done.
-    if (x_right == m_width) {
-      return;
-    }
+      // In case we have empty columns available on our left,
+      // swap the current (nonempty) column with the leftmost
+      // empty column
+      if (not empty_cols.empty()) {
+          for (int y = 0; y < m_height; ++y) {
+              std::swap(m_data[empty_cols.front() + y*m_width].color,
+                        m_data[col + y*m_width].color);
+          }
+          // Remove the newly filled column from the empty column queue.
+          empty_cols.pop_front();
 
-    // Otherwise, swap columns' color contents
-    for (int y = 0; y < m_height; ++y) {
-      std::swap(m_data[x_left + y * m_width].color,
-                m_data[x_right + y * m_width].color);
-    }
-
-    // The column at x_right is now empty.
-    empty_cols.push_back(x_right);
-
-    // Keep the queue sorted to efficiently retrieve the min.
-    std::sort(empty_cols.begin(), empty_cols.end());
-
-    //std::swap(empty_cols.front(), *std::min_element(empty_cols.begin(), empty_cols.end()));
-
-    // Update left_x to the leftmost empty column.
-    x_left = empty_cols.front();
-    empty_cols.pop_front();
+          // The current column is now the rightmost empty column known.
+          empty_cols.push_back(col);
+      }
   }
-
 }
 
 const Cluster& SameGame::get_cluster(int i) const {
