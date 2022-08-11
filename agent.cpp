@@ -25,9 +25,9 @@ std::pair<bool, Action> AgentGreedy::choose(const SameGame &sg) {
     return std::make_pair(false, Action{-1});
   }
 
-  return std::make_pair(
-      true,
-      *std::max_element(m_buffer.begin(), m_buffer.end(), [&sg](const auto& a, const auto& b){
-        return sg.score(a) < sg.score(b);
-      }));
+  return std::make_pair(true,
+                        *std::max_element(m_buffer.begin(), m_buffer.end(),
+                                          [&sg](const auto &a, const auto &b) {
+                                            return sg.score(a) < sg.score(b);
+                                          }));
 }
