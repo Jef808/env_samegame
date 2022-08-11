@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
       double& score = i == 0? get< 0 >(scores_vec)
         : i == 1? get< 1 >(scores_vec): get< 2 >(scores_vec);
 
-      score = i == 0? run< AgentRandom >(ifs)
+      score = i == 0? run< PolicyRandom >(ifs)
         : i == 1? run< AgentGreedy >(ifs): run< AgentLowColorCount >(ifs);
     }
   }

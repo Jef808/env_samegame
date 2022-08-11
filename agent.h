@@ -7,9 +7,9 @@
 #include "action_list.h"
 #include "samegame.h"
 
-class AgentRandom {
+class PolicyRandom {
 public:
-  AgentRandom() = default;
+  PolicyRandom() = default;
 
   std::pair<bool, Action> choose(const SameGame &sg);
 
@@ -19,9 +19,9 @@ private:
   std::mt19937 gen{std::random_device{}()};
 };
 
-class AgentGreedy {
+class PolicyGreedy {
 public:
-  AgentGreedy() = default;
+  PolicyGreedy() = default;
 
   std::pair<bool, Action> choose(const SameGame& sg);
 
@@ -30,9 +30,9 @@ private:
   std::vector<double> m_scores;
 };
 
-class AgentLowColorCount {
+class PolicyLowColorCount {
 public:
-  AgentLowColorCount() = default;
+  PolicyLowColorCount() = default;
 
   std::pair<bool, Action> choose(const SameGame& sg);
 
