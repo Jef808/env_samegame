@@ -4,6 +4,7 @@
 #include <random>
 #include <vector>
 
+#include "action_list.h"
 #include "samegame.h"
 
 class AgentRandom {
@@ -14,7 +15,20 @@ public:
 
 private:
   std::vector<Action> m_buffer;
+  std::vector<double> m_scores;
   std::mt19937 gen{std::random_device{}()};
 };
+
+class AgentGreedy {
+public:
+  AgentGreedy() = default;
+
+  std::pair<bool, Action> choose(const SameGame& sg);
+
+private:
+  std::vector<Action> m_buffer;
+  std::vector<double> m_scores;
+};
+
 
 #endif // AGENT_H_

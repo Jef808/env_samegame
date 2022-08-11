@@ -43,6 +43,11 @@ public:
    */
   bool is_valid(const Action &action) const;
 
+  /**
+   * Compute the score of an action.
+   */
+  double score(const Action &action) const;
+
   size_t width() const { return m_width; }
   size_t height() const { return m_height; }
 
@@ -81,12 +86,6 @@ private:
    */
   void empty_cluster(int index);
 };
-
-inline bool SameGame::is_valid(const Action &action) const {
-  const Cluster &cluster = m_data[action.index];
-  return cluster.color != Color::Empty && cluster.rep == action.index &&
-         cluster.size() > 1;
-}
 
 template <typename OutputIter>
 inline void SameGame::valid_actions(OutputIter out) const {

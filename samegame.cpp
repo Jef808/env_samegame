@@ -210,10 +210,42 @@ void SameGame::empty_cluster(int index) {
 
   std::for_each(members_buffer.begin(), members_buffer.end(),
                 [&](const auto i) {
+                  Color& color = m_data[i].color;
+                  --ccount[static_cast< std::underlying_type_t< Color > >(color)];
+                  ++ccount[static_cast< std::underlying_type_t< Color > >(Color::Empty)];
                   m_data[i].color = Color::Empty;
                   m_data[i].rep = i;
                   m_data[i].members.clear();
                 });
+}
+
+namespace {
+
+inline bool is_valid(const Action& action, const Cluster& cluster) {
+  return cluster.color != Color::Empty && cluster.rep == action.index &&
+    cluster.size() > 1;
+}
+
+} // namespace
+
+
+bool SameGame::is_valid(const Action &action) const {
+  return ::is_valid(action, m_data[action.index]);
+}
+
+double SameGame::score(const Action& action) const {
+  auto bonus_predicate = [&](const Cluster& cluster) {
+    const size_t n_empty_cells = ccount[0];
+    return n_empty_cells + cluster.size() == m_data.size();
+  };
+
+  const Cluster& cluster = get_cluster(action.index);
+  const size_t sz = cluster.size();
+
+  double score = ::is_valid(action, cluster) * (
+    (sz - 2) * (sz - 2) + 1000.0 * bonus_predicate(cluster));
+
+  return score;
 }
 
 void SameGame::apply(const Action &action) {
