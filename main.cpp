@@ -8,17 +8,31 @@
 #include <string>
 #include <tuple>
 
+enum class Agent { Random, Greedy };
+
 using namespace std;
 
 constexpr size_t WIDTH = 15;
 constexpr size_t HEIGHT = 15;
 
-enum class Agent { Random, Greedy };
+std::vector< std::pair< double, double > > scores;
 
-template <Agent A> double run(std::ifstream &ifs) {
+void print_scores(const auto &scores){
+
+  auto t = 1;
+  for (auto [score_random, score_greedy] : scores) {
+    cout << "\n\nTest " << t++ << ":\n"
+      << "  AgentRandom: " << score_random << "\n  AgentGreedy: " << score_greedy << endl;
+  }
+}
+
+
+template <Agent A> double run(std::ifstream &ifs, bool enable_viewer = false) {
   SameGame sg{WIDTH, HEIGHT};
   sg.load(ifs);
-  //Viewer::print(cout, sg);
+
+  if(enable_viewer)
+    Viewer::print(cout, sg);
 
   using Agent_t =
       std::conditional_t<A == Agent::Random, AgentRandom, AgentGreedy>;
@@ -41,11 +55,15 @@ template <Agent A> double run(std::ifstream &ifs) {
 
     sg.apply(action);
 
-    //Viewer::print(cout, sg);
+    if(enable_viewer)
+      Viewer::print(cout, sg);
+
     //cout << "\nScore: " << score << endl;
   }
 
-  //Viewer::print(cout, sg);
+  if(enable_viewer)
+    Viewer::print(cout, sg);
+
   //cout << "\n\nScore: " << score << endl;
 
   return score;
@@ -58,7 +76,6 @@ int main(int argc, char *argv[]) {
   }
   std::string input_fn = DATA_DIR + std::string(argv[1]);
 
-  std::vector< std::pair< double, double > > scores;
 
   for(auto t = 1; t < 51; ++t) {
 
@@ -80,12 +97,12 @@ int main(int argc, char *argv[]) {
 
   double tr = 0.0, tg = 0.0;
 
+  print_scores(scores);
+
   auto t = 1;
-  for (auto [sr, sg] : scores) {
-    cout << "\n\nTest " << t++ << ":\n"
-      << "  AgentRandom: " << sr << "\n  AgentGreedy: " << sg << endl;
-    tr += sr;
-    tg += sg;
+  for (auto [score_random, score_greedy] : scores) {
+    tr += score_random;
+    tg += score_greedy;
   }
 
   cout << "\n\n\nAverages:\n  AgentRandom: " << tr / scores.size()
@@ -93,3 +110,4 @@ int main(int argc, char *argv[]) {
 
   return EXIT_SUCCESS;
 }
+
