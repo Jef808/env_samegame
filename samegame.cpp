@@ -20,12 +20,6 @@ SameGame::SameGame(size_t width, size_t height)
   ccount.fill(0);
 }
 
-SameGame::~SameGame() {
-  gravity_buffer.clear();
-  gravity_buffer.shrink_to_fit();
-  members_buffer.clear();
-  members_buffer.shrink_to_fit();
-}
 
 void SameGame::load(std::istream &is) {
   m_data.reset();

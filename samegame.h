@@ -15,8 +15,6 @@ class SameGame {
 public:
   SameGame(size_t width, size_t height);
 
-  ~SameGame();
-
   /**
    * Load the board from an input stream.
    */
