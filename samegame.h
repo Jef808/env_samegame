@@ -59,6 +59,9 @@ private:
   std::array<int, NB_COLORS + 1> ccount;
   int n_empty_rows;
 
+  std::vector<Color> gravity_buffer;
+  std::vector<int> members_buffer;
+
   /**
    * Organize the connected sets of cells of the same color
    * into the #Cluster array of the member #DSU `m_data`.

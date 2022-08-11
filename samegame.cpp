@@ -9,8 +9,6 @@
 
 namespace {
 
-std::vector<Color> gravity_buffer;
-std::vector<int> members_buffer;
 
 } // namespace
 
