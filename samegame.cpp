@@ -7,10 +7,6 @@
 #include <string>
 #include <vector>
 
-namespace {
-
-
-} // namespace
 
 SameGame::SameGame(size_t width, size_t height)
     : m_width{width}, m_height{height}, m_data{width * height}, ccount{},
@@ -251,4 +247,8 @@ void SameGame::apply(const Action &action) {
   gravity();
   stack_columns();
   compute_clusters();
+}
+
+int SameGame::get_color_count(Color c) const {
+  return ccount[static_cast<std::underlying_type_t<Color>>(c)];
 }

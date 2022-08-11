@@ -1,12 +1,10 @@
 #ifndef DSU_H_
 #define DSU_H_
 
+#include "types.h"
+
 #include <cstddef>
 #include <vector>
-
-constexpr int NB_COLORS = 5;
-
-enum class Color { Empty = 0, Nb = NB_COLORS + 1 };
 
 struct Cluster {
 

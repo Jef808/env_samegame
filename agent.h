@@ -30,5 +30,17 @@ private:
   std::vector<double> m_scores;
 };
 
+class AgentLowColorCount {
+public:
+  AgentLowColorCount() = default;
+
+  std::pair<bool, Action> choose(const SameGame& sg);
+
+private:
+  std::vector<Action> m_buffer;
+  std::vector<double> m_scores;
+  std::array<int, NB_COLORS> m_ccounter;
+};
+
 
 #endif // AGENT_H_

@@ -1,6 +1,8 @@
+
 #ifndef SAMEGAME_H_
 #define SAMEGAME_H_
 
+#include "types.h"
 #include "dsu.h"
 
 #include <array>
@@ -35,7 +37,7 @@ public:
    * Get the current count for each colors.
    */
   template<typename OutputIter>
-  void color_counter(OutputIter out) const;
+  void colour_counter(OutputIter out) const;
 
   /**
    * Get the cluster containing the cell at index i.
@@ -52,8 +54,20 @@ public:
    */
   double score(const Action &action) const;
 
+  /**
+   * Get the color count for given color.
+   */
+  int get_color_count(Color c) const;
+
+  /**
+   * Get the color of the cell at index i.
+   */
+  Color get_color(int i) const
+    { return m_data[i].color; }
+
   size_t width() const { return m_width; }
   size_t height() const { return m_height; }
+
 
 private:
   const size_t m_width;
@@ -104,7 +118,7 @@ inline void SameGame::valid_actions(OutputIter out) const {
 }
 
 template< typename OutputIter >
-inline void SameGame::color_counter(OutputIter out) const {
+inline void SameGame::colour_counter(OutputIter out) const {
   std::copy(ccount.begin(), ccount.end(), out);
 }
 
