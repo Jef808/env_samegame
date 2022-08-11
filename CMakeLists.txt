@@ -10,5 +10,7 @@ add_executable(main
   dsu.cpp
   samegame.h
   samegame.cpp
+  agent.h
+  agent.cpp
   main.cpp)
 target_compile_definitions(main PRIVATE "-DDATA_DIR=\"${SG_DATA_DIR}/\"")

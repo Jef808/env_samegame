@@ -43,11 +43,6 @@ public:
    */
   bool is_valid(const Action &action) const;
 
-  /**
-   * Check if the state is valid.
-   */
-  bool is_valid_state() const;
-
   size_t width() const { return m_width; }
   size_t height() const { return m_height; }
 
@@ -89,16 +84,19 @@ private:
 
 inline bool SameGame::is_valid(const Action &action) const {
   const Cluster &cluster = m_data[action.index];
-  return cluster.color != Color::Empty &&
-         cluster.members.size() >
-             1; // NOTE: Only reps have nonzero sized members
+  return cluster.color != Color::Empty
+            && cluster.rep == action.index
+            && cluster.size() > 1;
 }
 
 template <typename OutputIter>
 inline void SameGame::valid_actions(OutputIter out) const {
-  for (auto it = m_data.begin(); it != m_data.end(); ++it)
-    if (const Action action{it->rep}; is_valid(action)) {
-      out = action;
+    for (int i = 0; i < m_data.size(); ++i) {
+        if (auto action = Action{ i };
+            is_valid(action))
+        {
+            out = action;
+        }
     }
 }
 

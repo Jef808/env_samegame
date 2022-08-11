@@ -4,6 +4,7 @@
 #include <cassert>
 #include <deque>
 #include <iostream>
+#include <set>
 #include <string>
 #include <sstream>
 #include <type_traits>
@@ -55,7 +56,7 @@ void SameGame::load(std::istream &is) {
         sv.copy(&buf_ss[0], pspace, 0);
         sv.remove_prefix(pspace + 1);
 
-        int color_i = std::stoi(buf_ss);
+        int color_i = std::stoi(buf_ss) + 1;
         ++ccount[color_i];
 
         Cluster& cluster = m_data[x + y * m_width];
@@ -114,7 +115,6 @@ void SameGame::compute_clusters() {
     else if (m_data[i].color == m_data[i - m_width].color) {
       m_data.unite(i, i - m_width);
     }
-
   }
 
   // On the upmost row, loop from the leftmost
@@ -150,23 +150,24 @@ void SameGame::gravity() {
     col_buffer.clear();
 
     // From the bottommost to the upmost cell in the column,
-    int h = 0;
-    for (; h < m_height; ++h) {
+    for (int h = 0; h < m_height; ++h) {
       // Copy the non-empty cells into the buffer
-      if (const Color color = m_data[h + (m_height - 1 - h) * m_width].color;
+      if (const Color color = m_data[x + (m_height - 1 - h) * m_width].color;
           color != Color::Empty) {
         col_buffer.push_back(color);
       }
     }
 
+    int y = 0;
+
     // Copy back the non-empty colors at the bottom of the column.
-    for (int y = 0; y < h; ++y) {
-      m_data[x + y * m_width].color = col_buffer[m_height - 1 - y];
+    for (; y < col_buffer.size(); ++y) {
+      m_data[x + (m_height - 1 - y) * m_width].color = col_buffer[y];
     }
 
     // Mark all cells above as empty.
-    for (int y = h; y < m_height; ++y) {
-      m_data[x + y * m_width].color = Color::Empty;
+    for (; y < m_height; ++y) {
+      m_data[x + (m_height - 1 - y) * m_width].color = Color::Empty;
     }
   }
 }
@@ -185,6 +186,7 @@ void SameGame::stack_columns() {
   };
 
   std::deque<int> empty_cols;
+  std::set<int> known_empty_cols;
   int x_left = 0, x_right = 0;
 
   // Find the leftmost empty column.
@@ -199,16 +201,19 @@ void SameGame::stack_columns() {
     // Search for next non-empty column, while storing
     // any empty columns' indices.
     int x_right = [x = x_left + 1, M = m_width, &is_empty_column,
-                   &empty_cols]() mutable {
+                   &empty_cols, &known_empty_cols]() mutable {
       while (x < M && is_empty_column(x)) {
-        empty_cols.push_back(x++);
+        auto [col, okay] = known_empty_cols.insert(x++);
+        if (okay) {
+          empty_cols.push_back(*col);
+        }
       }
       return x;
     }();
 
     // If failed to find nonempty column, we are done.
     if (x_right == m_width) {
-      break;
+      return;
     }
 
     // Otherwise, swap columns' color contents
@@ -223,9 +228,13 @@ void SameGame::stack_columns() {
     // Keep the queue sorted to efficiently retrieve the min.
     std::sort(empty_cols.begin(), empty_cols.end());
 
+    //std::swap(empty_cols.front(), *std::min_element(empty_cols.begin(), empty_cols.end()));
+
     // Update left_x to the leftmost empty column.
-    x_left = empty_cols[0];
+    x_left = empty_cols.front();
+    empty_cols.pop_front();
   }
+
 }
 
 const Cluster& SameGame::get_cluster(int i) const {
@@ -233,25 +242,29 @@ const Cluster& SameGame::get_cluster(int i) const {
 }
 
 void SameGame::empty_cluster(int index) {
-  int rep = m_data.find_rep(index);
-  std::vector<int> &members = m_data[rep].members;
+  static std::vector<int> members;
+  members.clear();
+
+  const std::vector<int>& _members = get_cluster(index).members;
+  std::copy(_members.begin(), _members.end(),
+            std::back_inserter(members));
 
   std::for_each(members.begin(), members.end(), [&](const auto i) {
     m_data[i].color = Color::Empty;
     m_data[i].rep = i;
+    m_data[i].members.clear();
   });
-
-  members.clear();
 }
 
 void SameGame::apply(const Action &action) {
+
+  if (not is_valid(action)) {
+    std::cerr << "Invalid action: " << action.index << std::endl;
+    throw std::runtime_error("Invalid action");
+  }
+
   empty_cluster(action.index);
   gravity();
   stack_columns();
   compute_clusters();
-}
-
-bool SameGame::is_valid_state() const {
-    bool res = true;
-    return res;
 }

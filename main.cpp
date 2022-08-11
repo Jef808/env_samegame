@@ -1,9 +1,11 @@
 #include "viewer.h"
 #include "samegame.h"
+#include "agent.h"
 
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <tuple>
 
 using namespace std;
 
@@ -28,6 +30,24 @@ int main(int argc, char *argv[]) {
     }
 
     sg.load(ifs);
+    Viewer::print(cout, sg);
+
+    AgentRandom agent;
+    bool okay = true;
+
+    while (true) {
+        Action action;
+
+        std::tie(okay, action) = agent.choose(sg);
+
+        if (not okay) {
+            break;
+        }
+
+        sg.apply(action);
+
+        Viewer::print(cout, sg);
+    }
 
     Viewer::print(cout, sg);
 

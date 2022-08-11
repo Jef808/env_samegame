@@ -18,7 +18,7 @@ struct Cluster {
   Color color{Color::Empty};
   std::vector<int> members;
 
-  size_t size() { return members.size(); }
+  size_t size() const { return members.size(); }
   auto begin() { return members.begin(); }
   auto begin() const { return members.begin(); }
   auto end() { return members.end(); }
@@ -57,6 +57,7 @@ public:
   const Cluster &operator[](size_t i) const { return m_clusters[i]; }
   auto begin() const { return m_clusters.begin(); }
   auto end() const { return m_clusters.end(); }
+  size_t size() const { return m_clusters.size(); }
 
 private:
   std::vector<Cluster> m_clusters;

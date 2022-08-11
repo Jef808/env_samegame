@@ -32,7 +32,7 @@ void Viewer::print(std::ostream &out, const SameGame &sg) {
     }
 
     // Build cell representative for the last cell.
-    fmt_cell(out, width - 1 + y * width, sg) << '\n';
+    fmt_cell(out, (y+1) * width - 1, sg) << '\n';
   }
 
   // Print the column indices
@@ -70,13 +70,6 @@ enum class ColorCode {
   WhiteBold = 97,
 };
 
-enum {
-  NonEmpty = 1,
-  NonTrivial = 2,
-  Rep = 4,
-  Highlighted = 8,
-};
-
 enum class Shape {
   EmptyCell = 0,
   TrivialCell = 1,
@@ -95,7 +88,7 @@ inline std::string shape_unicode(Shape s) {
   switch (s) {
   case Shape::EmptyCell:
   case Shape::TrivialCell:
-    return "\u25A0"; // black square (will be colored)
+    return "\u25A0"; // black square (will be non-empties)
   case Shape::NonTrivialCell:
     return "\u25A3"; // white square with black square inside
   case Shape::RepCell:
