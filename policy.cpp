@@ -1,11 +1,11 @@
-#include "agent.h"
+#include "policy.h"
 
 #include <algorithm>
 #include <array>
 #include <cassert>
 #include <random>
 
-std::pair<bool, Action> PolicyRandom::choose(const SameGame &sg) {
+std::pair<bool, Action> PolicyRandom::operator()(const SameGame &sg) {
   m_buffer.clear();
   sg.valid_actions(std::back_inserter(m_buffer));
 
@@ -18,7 +18,7 @@ std::pair<bool, Action> PolicyRandom::choose(const SameGame &sg) {
       m_buffer[std::uniform_int_distribution<>(0, m_buffer.size() - 1)(gen)]);
 }
 
-std::pair<bool, Action> PolicyGreedy::choose(const SameGame &sg) {
+std::pair<bool, Action> PolicyGreedy::operator()(const SameGame &sg) {
   m_buffer.clear();
   sg.valid_actions(std::back_inserter(m_buffer));
 
@@ -34,7 +34,7 @@ std::pair<bool, Action> PolicyGreedy::choose(const SameGame &sg) {
       true, *std::max_element(m_buffer.begin(), m_buffer.end(), Cmp));
 }
 
-std::pair<bool, Action> PolicyLowColorCount::choose(const SameGame &sg) {
+std::pair<bool, Action> PolicyLowColorCount::operator()(const SameGame &sg) {
   m_buffer.clear();
   sg.valid_actions(std::back_inserter(m_buffer));
 

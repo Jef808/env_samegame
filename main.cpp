@@ -1,4 +1,5 @@
-#include "action_list.h"
+#include "types.h"
+#include "policy.h"
 #include "agent.h"
 #include "samegame.h"
 #include "viewer.h"
@@ -12,9 +13,6 @@ enum class Agent { Random, Greedy, ColorCount };
 
 using namespace std;
 
-constexpr size_t WIDTH = 15;
-constexpr size_t HEIGHT = 15;
-
 typedef std::vector< std::tuple< double, double, double > > Results;
 
 void print_scores(const Results& results){
@@ -26,41 +24,6 @@ void print_scores(const Results& results){
          << ",\n  AgentColorCount: " << score_ccount << endl;
   }
 }
-
-template <typename AgentT> double run(std::ifstream &ifs, bool enable_viewer = false) {
-  SameGame sg{WIDTH, HEIGHT};
-  sg.load(ifs);
-
-  if(enable_viewer)
-    Viewer::print(cout, sg);
-
-  AgentT agent;
-  double score = 0.0;
-
-  while (true) {
-    auto [okay, action] = agent.choose(sg);
-
-    if (not okay) {
-      break;
-    }
-
-    score += sg.score(action);
-    sg.apply(action);
-
-    if(enable_viewer) {
-      Viewer::print(cout, sg);
-      cout << "\nScore: " << score << endl;
-    }
-  }
-
-  if(enable_viewer) {
-    Viewer::print(cout, sg);
-    cout << "\n\nScore: " << score << endl;
-  }
-
-  return score;
-}
-
 
 
 int main(int argc, char *argv[]) {
@@ -90,7 +53,7 @@ int main(int argc, char *argv[]) {
         : i == 1? get< 1 >(scores_vec): get< 2 >(scores_vec);
 
       score = i == 0? run< PolicyRandom >(ifs)
-        : i == 1? run< AgentGreedy >(ifs): run< AgentLowColorCount >(ifs);
+        : i == 1? run< PolicyGreedy >(ifs): run< PolicyLowColorCount >(ifs);
     }
   }
 
